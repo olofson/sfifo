@@ -1,0 +1,102 @@
+
+----------------------------------------------------------
+Platform support:
+	gcc / Linux / x86_64:		Works
+	gcc / Linux / x86:		Works
+	gcc / Linux / x86 kernel:	Abandoned
+	gcc / FreeBSD / x86:		Works
+	gcc / NetBSD / x86:		Works
+	gcc / Mac OS X / PPC:		Works
+	gcc / Win32 / x86:		Works
+	Borland C++ / DOS / x86RM:	Abandoned
+	gcc / BeOS / x86:		Works
+	gcc / BeOS / PPC:		Works
+	? / Solaris / x86		Works
+	? / Solaris / SPARC		Works
+	? / AmigaOS / PPC		Works
+----------------------------------------------------------
+
+2.0:	* License changed to zlib.
+
+	* Removed support for 16 bit platforms and Linux
+	  kernel space.
+
+	* No longer using errno.h return codes.
+
+	* Turned used/space macros into inline functions.
+
+	* Switched to new "Olofson Naming Conventions";
+		* sfifo_t	SFIFO
+		* sfifo_func	sfifo_Func
+
+	* The SFIFO struct is now a header, directly
+	  followed by the data buffer. No buffer pointer,
+	  allowing SFIFOs to work in shared memory across
+	  processes with different memory mappings. As a
+	  bonus, this also allows 32 and 64 bit processes
+	  to communicate via SFIFOs.
+
+	* Added sfifo_Open(), which returns a pointer to
+	  an SFIFO ready to use.
+
+	* sfifo_Init() now takes a raw memory buffer of
+	  specified size and turns it into an SFIFO of
+	  the largest size that will fit.
+
+	* Added flags field so that sfifo_Close() can be
+	  used regardless of how a FIFO was initialized.
+
+
+1.5:	Trying to make sfifo more robust, and easier to
+	use. It's now safe to close an sfifo more than
+	once. I've also changed some arguments and
+	variables to unsigned, to prevent signed input
+	from causing things to blow up. free/malloc
+	wrappers renamed _sf_free/_sf_malloc, to avoid
+	confusion and macro collisions.
+
+
+1.4:	* Spinning read and write operations added:
+		sfifo_read_spin()
+		sfifo_read_user_spin()
+		sfifo_write_spin()
+		sfifo_write_user_spin()
+
+	  NOTE: These calls actually *spin*!
+		Yes, simple, "dirty", busy waiting.
+
+	  They are meant for situations where proper
+	  blocking is not possible, or when the expected
+	  average spinning time is so short that blocking
+	  is not desirable.
+
+	  The former case refers to environments without
+	  threads or processes, such as DOS applications
+	  communicating with their ISRs. (That's actually
+	  why these calls were implemented.)
+
+	  The latter would be special situations on SMP
+	  systems, where you know you will never spin
+	  waiting for a thread that's waiting for your
+	  CPU. If you have one busy worker thread for
+	  each CPU, the worker threads may communicate
+	  this way, as long as the design implies that
+	  they're not supposed to spin for significant
+	  lengths of time during normal operation.
+
+	* Added 'volatile' to sfifo_atomic_t - just in
+	  case someone actually finds a compiler that
+	  manages to screw the synchronization up without
+	  it...
+
+
+1.3:	Critical buffer allocation bug fixed! For certain
+	requested buffer sizes, older version would
+	allocate a buffer of insufficient size, which
+	would result in memory thrashing. (Amazing that
+	I've manage to use this to the extent I have
+	without running into this... *heh*)
+
+
+1.2:	Max buffer size halved, to avoid problems with the
+	sign bit...
