@@ -1,5 +1,5 @@
-Simple portable lock-free single-reader/single-writer FIFO
-==========================================================
+Simple portable lock-free FIFO
+==============================
 
 Overview
 --------
